@@ -9,6 +9,9 @@ local opts = { noremap = true, silent = true }
 
 local term_opts = { silent = true }
 
+-- ToggleTerm
+vim.keymap.set('n', '<leader>tt', ':ToggleTerm<cr>')
+
 -- From chris@machine nvim tutorial
 -- Shorten function name
 local keymap = vim.api.nvim_set_keymap
@@ -39,7 +42,7 @@ keymap("n", "<leader>e", ":NvimTreeToggle<cr>", opts)
 -- Added by me
 keymap("n", "<leader>vs", ":vsplit<cr>", opts)
 keymap("n", "<leader>hs", ":split<cr>", opts)
-keymap("n", "<leader>t", ":terminal<cr>", opts)
+keymap("n", "<leader>th", ":terminal<cr>", opts)
 
 -- Resize with arrows
 keymap("n", "<A-Up>", ":resize +2<CR>", opts)
@@ -86,3 +89,5 @@ keymap("t", "<C-l>", "<C-\\><C-N><C-w>l", term_opts)
 keymap("n", "<leader>rp", ":w<cr>:vsplit<cr>:term python3 -i %<cr>", term_opts) -- run python
 keymap("t", "<Esc>", "<C-\\><C-n>", term_opts)
 keymap("t", "qj", "<C-\\><C-n>", term_opts)
+keymap("v", "qj", "<ESC>", opts)
+keymap("x", "qj", "<ESC>", opts)
