@@ -2,7 +2,3 @@ require "sam.options"
 require "config.lazy"
 require "sam.remap"
 vim.cmd "colorscheme edge"
---require "sam.nvim-tree"
-require("toggleterm").setup{
-		direction = 'float',
-}
