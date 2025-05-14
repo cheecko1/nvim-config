@@ -17,6 +17,9 @@ return {
         commented = true, -- Show virtual text alongside comment
       })
 
+      -- turn on diagnostics for all languages (makes it work for rust)
+      vim.diagnostic.config{ virtual_text = true }
+
       dap_python.setup("python3")
 
       vim.fn.sign_define("DapBreakpoint", {
