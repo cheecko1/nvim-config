@@ -4,6 +4,7 @@ return {
 				require("mason").setup({
 						ensure_installed={
 								'pylint',
+								'clangd',
 						}
 				})
 		end,
