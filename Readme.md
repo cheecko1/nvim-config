@@ -1,4 +1,10 @@
-cpp mason installs:
+For mac 
+- install nerd font from https://github.com/epk/SF-Mono-Nerd-Font
+- brew install npm (for mason)
+
+mason installs:
+- pyright
+- debugpy?
 - clangd
 - clang-format 
 
