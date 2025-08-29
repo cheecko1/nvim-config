@@ -4,6 +4,7 @@ For mac
 
 mason installs:
 - pyright
+    - will not install without first running apt install python3-venv
 - debugpy?
 - clangd
 - clang-format 
