@@ -36,6 +36,7 @@ keymap("n", "<C-j>", "<C-w>j", opts)
 keymap("n", "<C-k>", "<C-w>k", opts)
 keymap("n", "<C-l>", "<C-w>l", opts)
 
+-- Explorer
 --keymap("n", "<leader>e", ":Lex 20<cr>", opts)
 keymap("n", "<leader>e", ":NvimTreeToggle<cr>", opts)
 
@@ -94,3 +95,7 @@ keymap("x", "qj", "<ESC>", opts)
 
 -- Line wrap
 keymap("n", "<leader>w", ":set wrap!<CR>", opts)
+
+-- Normal pasting
+keymap("n", "p", '"0p', opts)
+keymap("n", "P", '"0P', opts)
