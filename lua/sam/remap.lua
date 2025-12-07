@@ -91,3 +91,6 @@ keymap("t", "<Esc>", "<C-\\><C-n>", term_opts)
 keymap("t", "qj", "<C-\\><C-n>", term_opts)
 keymap("v", "qj", "<ESC>", opts)
 keymap("x", "qj", "<ESC>", opts)
+
+-- Line wrap
+keymap("n", "<leader>w", ":set wrap!<CR>", opts)
