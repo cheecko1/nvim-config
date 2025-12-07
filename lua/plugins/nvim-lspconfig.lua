@@ -6,5 +6,11 @@ return{
 		config = function()
 				--require('lspconfig').pyright.setup({})
 				--require('lspconfig').rust_analyzer.setup({})
+        vim.lsp.config.clangd = {
+          cmd = {
+            'clangd',
+						"-fallback-style=webkit"
+          },
+				}
 		end,
 }
