@@ -4,13 +4,13 @@ return {
 		dependencies = {
 			"nvim-neotest/nvim-nio",
 			"rcarriga/nvim-dap-ui",
-			"mfussenegger/nvim-dap-python",
+			--"mfussenegger/nvim-dap-python",
 			"theHamsta/nvim-dap-virtual-text",
 		},
 		config = function()
 			local dap = require("dap")
 			local dapui = require("dapui")
-			local dap_python = require("dap-python")
+			--local dap_python = require("dap-python")
 			local vt = require("nvim-dap-virtual-text")
 
 			require("dapui").setup({})
@@ -57,7 +57,7 @@ return {
 			-- turn on diagnostics for all languages (makes it work for rust)
 			vim.diagnostic.config { virtual_text = true }
 
-			dap_python.setup("python3")
+			--dap_python.setup("python3")
 
 			-- Symbols
 			vim.fn.sign_define("DapBreakpoint", {

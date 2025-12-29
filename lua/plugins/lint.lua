@@ -9,6 +9,8 @@ return {
 		lint.linters_by_ft = {
 			python = { "pylint" },
 		}
+		-- assumes :pwd is your project root and .venv lives there
+		lint.linters.pylint.cmd = vim.fn.getcwd() .. "/.venv/bin/pylint"
 
 		local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
 
