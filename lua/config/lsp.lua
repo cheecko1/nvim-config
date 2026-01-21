@@ -5,8 +5,6 @@ local function lsp_on_attach(client, bufnr)
     vim.keymap.set(mode, lhs, rhs, { buffer = bufnr })
   end
 
-  print('LSP attached to buffer', bufnr)
-
   -- Basic LSP keymaps
   bufmap('n', 'gd', vim.lsp.buf.definition)
   bufmap('n', 'gD', vim.lsp.buf.declaration)
@@ -15,11 +13,6 @@ local function lsp_on_attach(client, bufnr)
   bufmap('n', 'K',  vim.lsp.buf.hover)
   bufmap('n', '<leader>rn', vim.lsp.buf.rename)
   bufmap('n', '<leader>ca', vim.lsp.buf.code_action)
---[[
-  -- Format buffer
-  bufmap('n', '<leader>f', function()
-    vim.lsp.buf.format({ async = true })
-  end) ]]
 end
 
 -- clangd configuration
@@ -34,7 +27,23 @@ vim.lsp.config('clangd', {
   on_attach = lsp_on_attach,
 })
 
-vim.lsp.enable({ 'clangd' })
+-- lua_ls configuration (Neovim config development)
+vim.lsp.config('lua_ls', {
+  on_attach = lsp_on_attach,
+  settings = {
+    Lua = {
+      runtime = { version = 'LuaJIT' },
+      diagnostics = { globals = { 'vim' } },
+      workspace = {
+        checkThirdParty = false,
+        library = vim.api.nvim_get_runtime_file('', true),
+      },
+      telemetry = { enable = false },
+    },
+  },
+})
+
+vim.lsp.enable({ 'clangd', 'lua_ls' })
 
 
 -- Linting
