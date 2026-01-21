@@ -39,10 +39,11 @@ TODO:
 - [ ] automatically create compile commands on build
     - can't do on every build because it only complies things that have been changed so replaces the file with an empty one
     - the command tha needs to be run is `bear --output ./Debug/compile_commands.json -- make all -C Debug/`
-- [ ] save files on mB
+- [x] save files on mB
 - [x] quickfix
     - [x] diagnostic quickfix shortcut
     - [x] todo list quickfix shortcut
     - [x] quickfix open, next, previous shortcuts
-- [ ] make STM debug profile generalise to different project names
+- [x] make STM debug profile generalise to different project names
 - [ ] work out how the makefile is generated
+- [x] stop qj keymap in lazygit window

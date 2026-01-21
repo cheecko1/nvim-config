@@ -18,7 +18,60 @@ return {
 				commented = true, -- Show virtual text alongside comment
 			})
 
+			-- Functions
+			-- floating terminal window
+			local function float_term(cmd)
+				local buf = vim.api.nvim_create_buf(false, true)
+				local width = math.floor(vim.o.columns * 0.7)
+				local height = math.floor(vim.o.lines * 0.7)
+
+				local win = vim.api.nvim_open_win(buf, true, {
+					relative = "editor",
+					style = "minimal",
+					border = "rounded",
+					width = width,
+					height = height,
+					row = (vim.o.lines - height) * 0.5,
+					col = (vim.o.columns - width) * 0.5,
+				})
+
+				vim.fn.termopen(cmd)
+				vim.cmd("startinsert")
+			end
+
 			-- STM32
+			-- function to find elf file
+			local function find_elf()
+				local debug_dir = vim.fn.getcwd() .. "/Debug"
+				local handle = vim.loop.fs_scandir(debug_dir)
+
+				if not handle then
+					return nil, "Debug directory not found: " .. debug_dir
+				end
+
+				local elf_files = {}
+
+				while true do
+					local name, t = vim.loop.fs_scandir_next(handle)
+					if not name then break end
+
+					if t == "file" and name:sub(-4) == ".elf" then
+						table.insert(elf_files, debug_dir .. "/" .. name)
+					end
+				end
+
+				if #elf_files == 0 then
+					return nil, "No .elf files found in " .. debug_dir
+				end
+
+				if #elf_files > 1 then
+					return nil, "Multiple .elf files found:\n" .. table.concat(elf_files, "\n")
+				end
+
+				return elf_files[1]
+			end
+
+
 			dap.listeners.on_config["stlink_autostart"] = function(config)
 				-- Simple debug trace to confirm it runs
 				--print("hello from on_config")
@@ -39,13 +92,21 @@ return {
 				-- IMPORTANT: on_config *must* return a config
 				return config
 			end
+
 			dap.configurations.c = {
 				{
 					name = "Debug STM32",
 					type = "cppdbg", -- must match an adapter defined in dap.adapters
 					request = "launch",
 					cwd = "${workspaceFolder}",
-					program = "${workspaceFolder}/Debug/OOPCB_STM.elf",
+					program = function() -- vibe coded function to find .elf files
+						local elf, err = find_elf()
+						if not elf then
+							vim.notify(err, vim.log.levels.ERROR)
+							return nil
+						end
+						return elf
+					end,
 					stopAtEntry = false,
 					MIMode = "gdb",
 					miDebuggerServerAddress = "localhost:61234",
@@ -53,6 +114,7 @@ return {
 					"/opt/ST/STM32CubeCLT_1.19.0/GNU-tools-for-STM32/bin/arm-none-eabi-gdb",
 				},
 			}
+			dap.configurations.cpp = dap.configurations.c
 
 			-- turn on diagnostics for all languages (makes it work for rust)
 			vim.diagnostic.config { virtual_text = true }
@@ -163,45 +225,38 @@ return {
 				dap.run_to_cursor()
 			end, opts)
 
-
-			local function float_term(cmd)
-				local buf = vim.api.nvim_create_buf(false, true)
-				local width = math.floor(vim.o.columns * 0.7)
-				local height = math.floor(vim.o.lines * 0.7)
-
-				local win = vim.api.nvim_open_win(buf, true, {
-					relative = "editor",
-					style = "minimal",
-					border = "rounded",
-					width = width,
-					height = height,
-					row = (vim.o.lines - height) * 0.5,
-					col = (vim.o.columns - width) * 0.5,
-				})
-
-				vim.fn.termopen(cmd)
-				vim.cmd("startinsert")
-			end
-
+			-- STM programming keymaps
 			vim.keymap.set("n", "<leader>mb", function()
-				float_term("make all -C Debug")
-				--float_term("bear --output ./Debug/compile_commands.json -- make all -C Debug")
+				--float_term("make all -C Debug")
+				float_term("cmake -S . -B Debug -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake && cmake --build Debug")
 			end, opts)
 
 			vim.keymap.set("n", "<leader>mp", function()
 				dap.terminate()
-				float_term("STM32_Programmer_CLI -c port=SWD -w ./Debug/OOPCB_STM.elf")
+
+				local elf, err = find_elf()
+				if not elf then
+					vim.notify(err, vim.log.levels.ERROR)
+					return
+				end
+
+				float_term("STM32_Programmer_CLI -c port=SWD -w " .. elf)
 			end, opts)
 
 			vim.keymap.set("n", "<leader>mB", function()
-				-- Save all modified buffers
-				vim.cmd("wall")
-
-				-- Terminate debug session if running
-				dap.terminate()
+				vim.cmd("wall") -- Save all modified buffers
+				dap.terminate() -- Terminate debug session if running
 
 				-- Build and flash STM32
-				float_term("make all -C Debug && STM32_Programmer_CLI -c port=SWD -w ./Debug/OOPCB_STM.elf")
+
+				local elf, err = find_elf()
+				if not elf then
+					vim.notify(err, vim.log.levels.ERROR)
+					return
+				end
+
+				--float_term("make all -C Debug && STM32_Programmer_CLI -c port=SWD -w " .. elf)
+				float_term("cmake -S . -B Debug -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake && cmake --build Debug && STM32_Programmer_CLI -c port=SWD -w " .. elf)
 			end, opts)
 		end,
 	},
