@@ -89,7 +89,27 @@ keymap("t", "<C-l>", "<C-\\><C-N><C-w>l", term_opts)
 -- ME
 keymap("n", "<leader>rp", ":w<cr>:vsplit<cr>:term python3 -i %<cr>", term_opts) -- run python
 keymap("t", "<Esc>", "<C-\\><C-n>", term_opts)
-keymap("t", "qj", "<C-\\><C-n>", term_opts)
+local sam_term_keymaps = vim.api.nvim_create_augroup("SamTermKeymaps", { clear = true })
+vim.api.nvim_create_autocmd("TermOpen", {
+	group = sam_term_keymaps,
+	pattern = "*",
+	callback = function(ev)
+		local buf = ev.buf
+		vim.schedule(function()
+			if not vim.api.nvim_buf_is_valid(buf) then
+				return
+			end
+
+			local ft = vim.bo[buf].filetype
+			local name = vim.api.nvim_buf_get_name(buf)
+			if ft == "lazygit" or name:match("lazygit") then
+				return
+			end
+
+			vim.keymap.set("t", "qj", "<C-\\><C-n>", { buffer = buf, silent = true })
+		end)
+	end,
+})
 keymap("v", "qj", "<ESC>", opts)
 keymap("x", "qj", "<ESC>", opts)
 
