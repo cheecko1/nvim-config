@@ -118,9 +118,9 @@ return {
 				return config
 			end
 
-			-- STM debug configuration option
 			dap.configurations.c = {
 				{
+					-- STM debug configuration option
 					name = "Debug STM32", -- name in options
 					type = "cppdbg", -- must match an adapter defined in dap.adapters
 					request = "launch",
@@ -139,11 +139,8 @@ return {
 					miDebuggerPath =
 					"/opt/ST/STM32CubeCLT_1.19.0/GNU-tools-for-STM32/bin/arm-none-eabi-gdb",
 				},
-			}
-
-			-- Pico debug configuration option
-			dap.configurations.c = {
 				{
+					-- Pico debug configuration option
 					name = "Debug Pi Pico", -- name in options
 					type = "cppdbg", -- must match an adapter defined in dap.adapters
 					request = "launch",
