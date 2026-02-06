@@ -75,39 +75,78 @@ return {
 
 			-- Start ST-Link gdb server when debug session starts
 			dap.listeners.on_config["stlink_autostart"] = function(config) -- runs just before debug session starts (after it's configured with any user input)
-				-- Simple debug trace to confirm it runs
-				-- print("hello from on_config")
 
-				if config.type == "cppdbg" then -- Only run for cppdbg configs
+				-- if config.type == "cppdbg" then -- Only run for cppdbg configs
+				if config.name == "Debug STM32" then -- Only start for STM32 config
+					print ("starting STM32 gdb server")
 					vim.fn.jobstart({ -- start asyncronous gdb server process
 						"ST-LINK_gdbserver",
 						"-d", "-v", "-t",
 						"-p", "61234", -- make sure this matches miDebuggerServerAddress
 						"-cp", "/opt/ST/STM32CubeCLT_1.19.0/STM32CubeProgrammer/bin",
-					}, { detach = true }) -- neovim won't manage or kill process, it will keep running even if neovim exits
+					-- }, { detach = true }) -- neovim won't manage or kill process, it will keep running even if neovim exits
+					}, { detach = false})
 
 					-- Give the server a moment to come up before cppdbg / gdb try to connect
 					vim.wait(1000) -- increase to 2000 if still flaky
+					print("done")
 				end
 
 				-- IMPORTANT: on_config *must* return a config
 				return config
 			end
+			-- local stlink_job = nil
+			--
+			-- dap.listeners.on_config["stlink_autostart"] = function(config)
+			-- 	if config.name ~= "Debug STM32" then return config end
+			--
+			-- 	-- prevent multiple servers
+			-- 	if stlink_job and vim.fn.jobwait({ stlink_job }, 0)[1] == -1 then
+			-- 		vim.notify("ST-LINK_gdbserver already running", vim.log.levels.INFO)
+			-- 		return config
+			-- 	end
+			--
+			-- 	vim.notify("Starting STM32 gdb server…", vim.log.levels.INFO)
+			--
+			-- 	stlink_job = vim.fn.jobstart({
+			-- 		"ST-LINK_gdbserver",
+			-- 		"-d", "-v", "-t",
+			-- 		"-p", "61234",
+			-- 		"-cp", "/opt/ST/STM32CubeCLT_1.19.0/STM32CubeProgrammer/bin",
+			-- 	}, {
+			-- 		detach = false,
+			-- 		stdout_buffered = true,
+			-- 		stderr_buffered = true,
+			-- 		on_stdout = function(_, data)
+			-- 			if data then for _, l in ipairs(data) do if l ~= "" then vim.notify("[STLINK] " .. l) end end end
+			-- 		end,
+			-- 		on_stderr = function(_, data)
+			-- 			if data then for _, l in ipairs(data) do if l ~= "" then vim.notify("[STLINK ERR] " .. l,
+			-- 							vim.log.levels.ERROR) end end end
+			-- 		end,
+			-- 	})
+			--
+			-- 	-- wait longer; ST tools sometimes need it after updates
+			-- 	vim.wait(3000)
+			--
+			-- 	return config
+			-- end
 
 			-- Start pico openocd gdb server when debug session starts
 			dap.listeners.on_config["pico_autostart"] = function(config) -- runs just before debug session starts (after it's configured with any user input)
 				-- Simple debug trace to confirm it runs
 				print("hello from pico on_config")
 
-				if config.type == "cppdbg" then -- Only run for cppdbg configs
-					print ("starting gdb server")
+				-- if config.type == "cppdbg" then -- Only run for cppdbg configs
+				if config.name == "Debug Pi Pico" then
+					print("starting pico gdb server")
 					vim.fn.jobstart({ -- start asyncronous gdb server process
 						"openocd",
 						"-f", "interface/cmsis-dap.cfg",
 						"-f", "target/rp2350.cfg", -- will have to change if using rp2040
 						"-c", "adapter speed 5000",
---						"-c", "program build/HelloWorld.elf verify reset",
-					}, { detach = false}) -- process will terminate when neovim closes
+						--						"-c", "program build/HelloWorld.elf verify reset",
+					}, { detach = false }) -- process will terminate when neovim closes
 
 					-- Give the server a moment to come up before cppdbg / gdb try to connect
 					vim.wait(2000) -- increase if still flaky
@@ -277,7 +316,8 @@ return {
 			-- STM programming keymaps
 			vim.keymap.set("n", "<leader>mb", function()
 				--float_term("make all -C Debug")
-				float_term("cmake -S . -B Debug -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake && cmake --build Debug")
+				float_term(
+				"cmake -S . -B Debug -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake && cmake --build Debug")
 			end, opts)
 
 			vim.keymap.set("n", "<leader>mp", function()
@@ -305,14 +345,16 @@ return {
 				end
 
 				--float_term("make all -C Debug && STM32_Programmer_CLI -c port=SWD -w " .. elf)
-				float_term("cmake -S . -B Debug -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake && cmake --build Debug && STM32_Programmer_CLI -c port=SWD -w " .. elf)
+				float_term(
+				"cmake -S . -B Debug -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake && cmake --build Debug && STM32_Programmer_CLI -c port=SWD -w " ..
+				elf)
 			end, opts)
 
 			vim.keymap.set("n", "<leader>pb", function()
 				vim.cmd("wall") -- Save all modified buffers
 				dap.terminate() -- Terminate debug session if running
 
-				float_term("cmake -S . -B build && cmake --build build") 
+				float_term("cmake -S . -B build && cmake --build build")
 			end, opts)
 		end,
 	},
