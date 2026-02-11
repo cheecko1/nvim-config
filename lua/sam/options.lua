@@ -11,3 +11,4 @@ vim.opt.shiftwidth = 4		-- defaults to 8 spaces for a tab - reduce to 4
 vim.opt.relativenumber = true
 vim.opt.wrap = false
 vim.opt.termguicolors = true
+vim.opt.conceallevel = 2
