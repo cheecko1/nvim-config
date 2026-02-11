@@ -17,6 +17,7 @@ return {
 								"heex",
 								"javascript",
 								"html",
+								"asm",
 								"python"}, 
 						sync_install = false,
 						highlight = { enable = true },
