@@ -37,12 +37,13 @@ keymap("n", "<C-k>", "<C-w>k", opts)
 keymap("n", "<C-l>", "<C-w>l", opts)
 
 -- Explorer
---keymap("n", "<leader>e", ":Lex 20<cr>", opts)
 keymap("n", "<leader>e", ":NvimTreeToggle<cr>", opts)
 
--- Added by me
+-- Screen splitting
 keymap("n", "<leader>vs", ":vsplit<cr>", opts)
 keymap("n", "<leader>hs", ":split<cr>", opts)
+
+-- Open terminal
 keymap("n", "<leader>th", ":terminal<cr>", opts)
 
 -- Resize with arrows
@@ -54,11 +55,6 @@ keymap("n", "<A-Right>", ":vertical resize +2<CR>", opts)
 -- Navigate buffers
 keymap("n", "<S-l>", ":bnext<CR>", opts)
 keymap("n", "<S-h>", ":bprevious<CR>", opts)
-
--- Insert --
--- Press jk fast to enter
--- modified to qj for dvorak
-keymap("i", "qj", "<ESC>", opts)
 
 -- Visual --
 -- Stay in indent mode
@@ -86,32 +82,42 @@ keymap("t", "<C-j>", "<C-\\><C-N><C-w>j", term_opts)
 keymap("t", "<C-k>", "<C-\\><C-N><C-w>k", term_opts)
 keymap("t", "<C-l>", "<C-\\><C-N><C-w>l", term_opts)
 
--- ME
+-- Python
 keymap("n", "<leader>rp", ":w<cr>:vsplit<cr>:term python3 -i %<cr>", term_opts) -- run python
-keymap("t", "<Esc>", "<C-\\><C-n>", term_opts)
-local sam_term_keymaps = vim.api.nvim_create_augroup("SamTermKeymaps", { clear = true })
-vim.api.nvim_create_autocmd("TermOpen", {
+
+-- Exiting
+-- Press qj fast to exit
+keymap("i", "qj", "<ESC>", opts)
+keymap("v", "qj", "<ESC>", opts)
+keymap("x", "qj", "<ESC>", opts)
+
+-- Only register qj and ESC keymap if for a terminal if it isn't a lazygit termnial
+local sam_term_keymaps = vim.api.nvim_create_augroup("SamTermKeymaps", { clear = true }) -- create augroup
+vim.api.nvim_create_autocmd("TermOpen", {                                                -- create aucommand registered to SamTermKeymaps augroup
 	group = sam_term_keymaps,
 	pattern = "*",
 	callback = function(ev)
-		local buf = ev.buf
-		vim.schedule(function()
+		local buf = ev.buf    -- buffer ID of newly opened terminal
+		vim.schedule(function() -- run when neovim is ready
+			-- only run if the buffer still exists
 			if not vim.api.nvim_buf_is_valid(buf) then
 				return
 			end
 
 			local ft = vim.bo[buf].filetype
 			local name = vim.api.nvim_buf_get_name(buf)
+
+			-- return if it's a lazygit terminal
 			if ft == "lazygit" or name:match("lazygit") then
 				return
 			end
 
+			-- set exit and escape keymaps
 			vim.keymap.set("t", "qj", "<C-\\><C-n>", { buffer = buf, silent = true })
+			vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { buffer = buf, silent = true })
 		end)
 	end,
 })
-keymap("v", "qj", "<ESC>", opts)
-keymap("x", "qj", "<ESC>", opts)
 
 -- Line wrap
 keymap("n", "<leader>w", ":set wrap!<CR>", opts)
@@ -119,3 +125,8 @@ keymap("n", "<leader>w", ":set wrap!<CR>", opts)
 -- Normal pasting
 keymap("n", "p", '"0p', opts)
 keymap("n", "P", '"0P', opts)
+
+-- System clipboard yank
+keymap("n", "<leader>y", '"+y', opts) -- yank to system clipboard
+keymap("v", "<leader>y", '"+y', opts) -- yank to system clipboard
+keymap("n", "<leader>Y", '"+Y', opts) -- yank line to system clipboard
