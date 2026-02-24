@@ -7,6 +7,8 @@ return {
 		conform.setup({
 			formatters_by_ft = {
 				python = { "black" },
+				c = { "clang-format" },
+				cpp = { "clang-format" },
 			},
 		})
 
