@@ -22,6 +22,8 @@ return {
 		cmp.setup({
 			completion = {
 				completopt = "menu,menuone,preview,noselect",
+				-- turn off automatic autocomplete
+				-- autocomplete = false,
 			},
 			snippet = {
 				expand = function(args)
@@ -64,7 +66,8 @@ return {
 				{ name = "nvim_lsp" }, -- higher priority
 				{ name = "luasnip" },
 			}, {
-				{ name = "buffer" }, -- fallback sources
+				-- use words in the buffer as a source for autocomplete
+				-- { name = "buffer" }, -- fallback sources
 				{ name = "path" },
 			}),
 
