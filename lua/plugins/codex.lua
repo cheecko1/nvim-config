@@ -65,6 +65,9 @@ return {
     end
   end,
   opts = {
+    -- Pass CLI flags directly to codex.
+    -- `untrusted` is the strictest interactive approval policy.
+    cmd         = { 'codex', '--ask-for-approval', 'untrusted' },
     keymaps     = {
       toggle = nil, -- Keybind to toggle Codex window (Disabled by default, watch out for conflicts)
       quit = '<C-q>', -- Keybind to close the Codex window (default: Ctrl + q)
