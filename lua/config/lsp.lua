@@ -20,7 +20,8 @@ vim.lsp.config('clangd', {
   cmd = {
 		'clangd',
 		'--compile-commands-dir=Debug',
-		"-fallback-style=webkit"
+		"-fallback-style=webkit",
+    -- '--query-driver=/opt/ST/STM32CubeCLT_1.19.0/GNU-tools-for-STM32/bin/arm-none-eabi-*',
 		},
   filetypes = { 'c', 'cpp', 'objc', 'objcpp' },
   root_markers = { 'compile_commands.json', '.git', '.clang-format', '.clangd' },
