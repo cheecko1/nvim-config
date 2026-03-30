@@ -9,8 +9,11 @@ return {
 		lint.linters_by_ft = {
 			python = { "pylint" },
 		}
+		local pylint = lint.linters.pylint
+		-- disables missing docstring warnings
+		pylint.args = vim.list_extend({ "--disable=C0114,C0115,C0116" }, pylint.args)
 		-- assumes :pwd is your project root and .venv lives there
-		lint.linters.pylint.cmd = vim.fn.getcwd() .. "/.venv/bin/pylint"
+		pylint.cmd = vim.fn.getcwd() .. "/.venv/bin/pylint"
 
 		local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
 
