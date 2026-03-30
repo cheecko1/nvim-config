@@ -16,8 +16,8 @@ return {
 
     -- codex.nvim's built-in panel mode sizes as a percentage of `vim.o.columns` and
     -- may reshuffle other splits. Patch its internal `open_panel()` so it always:
-    -- - splits the *current* window
-    -- - sizes the Codex panel as a fraction of the current window width
+    -- - opens as the far-right split in the current tab
+    -- - sizes the Codex panel as a fraction of the full editor width
     if not (opts.panel and type(opts.width) == 'number') then return end
     if not (type(debug) == 'table' and type(debug.getupvalue) == 'function' and type(debug.setupvalue) == 'function') then return end
 
@@ -27,21 +27,23 @@ return {
       local state = require('codex.state')
 
       local original_win = vim.api.nvim_get_current_win()
-      local original_width = vim.api.nvim_win_get_width(original_win)
+      local total_width = vim.o.columns
       local old_equalalways = vim.o.equalalways
       local had_winfixwidth = vim.wo[original_win].winfixwidth
       vim.o.equalalways = false
       vim.wo[original_win].winfixwidth = false
 
       local ok, err = pcall(function()
-        vim.cmd('silent! noautocmd vertical rightbelow vsplit')
+        vim.cmd('silent! noautocmd botright vertical vsplit')
         local panel_win = vim.api.nvim_get_current_win()
         vim.api.nvim_win_set_buf(panel_win, state.buf)
         vim.api.nvim_win_set_width(
           panel_win,
-          math.min(math.max(1, math.floor(original_width * panel_width_factor)), math.max(1, original_width - 1))
+          math.min(
+            math.max(20, math.floor(total_width * panel_width_factor)),
+            math.max(20, total_width - 1)
+          )
         )
-        pcall(vim.api.nvim_win_set_width, original_win, original_width - vim.api.nvim_win_get_width(panel_win))
 
         state.win = panel_win
       end)
