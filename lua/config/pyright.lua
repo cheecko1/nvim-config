@@ -3,6 +3,7 @@ vim.lsp.config("pyright", {
     python = {
       venvPath = ".",
       venv = ".venv",
+			pythonPath = ".venv/bin/python",
       analysis = {
         autoSearchPaths = true,
         useLibraryCodeForTypes = true,
