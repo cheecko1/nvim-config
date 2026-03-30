@@ -315,6 +315,7 @@ return {
 
 			-- STM programming keymaps
 			vim.keymap.set("n", "<leader>mb", function()
+				vim.cmd("wall") -- Save all modified buffers
 				--float_term("make all -C Debug")
 				float_term(
 				"cmake -S . -B Debug -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake && cmake --build Debug")
