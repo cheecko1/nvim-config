@@ -123,8 +123,8 @@ vim.api.nvim_create_autocmd("TermOpen", {                                       
 keymap("n", "<leader>w", ":set wrap!<CR>", opts)
 
 -- Normal pasting
-keymap("n", "p", '"0p', opts)
-keymap("n", "P", '"0P', opts)
+-- keymap("n", "p", '"0p', opts)
+-- keymap("n", "P", '"0P', opts)
 
 -- System clipboard yank
 keymap("n", "<leader>y", '"+y', opts) -- yank to system clipboard

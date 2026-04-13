@@ -12,3 +12,4 @@ vim.opt.relativenumber = false
 vim.opt.wrap = false
 vim.opt.termguicolors = true
 vim.opt.conceallevel = 2
+vim.opt.clipboard = "unnamedplus"
