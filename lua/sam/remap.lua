@@ -122,6 +122,38 @@ vim.api.nvim_create_autocmd("TermOpen", {                                       
 -- Line wrap
 keymap("n", "<leader>w", ":set wrap!<CR>", opts)
 
+-- Keep clipboard yanks/pastes, but don't clobber clipboard on delete/change.
+-- If a register is explicitly chosen (e.g. "ad), respect it.
+local function blackhole_if_unnamed(op)
+	local reg = vim.v.register
+	return (reg == '"' or reg == "+" or reg == "*") and '"_' .. op or op
+end
+
+vim.keymap.set({ "n", "x" }, "d", function()
+	return blackhole_if_unnamed("d")
+end, { expr = true, noremap = true, silent = true })
+vim.keymap.set({ "n", "x" }, "c", function()
+	return blackhole_if_unnamed("c")
+end, { expr = true, noremap = true, silent = true })
+vim.keymap.set({ "n", "x" }, "x", function()
+	return blackhole_if_unnamed("x")
+end, { expr = true, noremap = true, silent = true })
+vim.keymap.set({ "n", "x" }, "s", function()
+	return blackhole_if_unnamed("s")
+end, { expr = true, noremap = true, silent = true })
+vim.keymap.set("n", "D", function()
+	return blackhole_if_unnamed("D")
+end, { expr = true, noremap = true, silent = true })
+vim.keymap.set("n", "C", function()
+	return blackhole_if_unnamed("C")
+end, { expr = true, noremap = true, silent = true })
+vim.keymap.set("n", "X", function()
+	return blackhole_if_unnamed("X")
+end, { expr = true, noremap = true, silent = true })
+vim.keymap.set("n", "S", function()
+	return blackhole_if_unnamed("S")
+end, { expr = true, noremap = true, silent = true })
+
 -- Normal pasting
 -- keymap("n", "p", '"0p', opts)
 -- keymap("n", "P", '"0P', opts)
