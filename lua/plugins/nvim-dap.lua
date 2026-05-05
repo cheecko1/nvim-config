@@ -72,24 +72,59 @@ return {
 				return elf_files[1]
 			end
 
+			local stlink_gdb_job = nil
+			local pico_openocd_job = nil
+
+			local function is_job_running(job_id)
+				return job_id and vim.fn.jobwait({ job_id }, 0)[1] == -1
+			end
+
+			local function stop_stlink_gdbserver()
+				if is_job_running(stlink_gdb_job) then
+					vim.fn.jobstop(stlink_gdb_job)
+				end
+				stlink_gdb_job = nil
+			end
+
+			local function stop_pico_openocd()
+				if is_job_running(pico_openocd_job) then
+					vim.fn.jobstop(pico_openocd_job)
+				end
+				pico_openocd_job = nil
+			end
+
 
 			-- Start ST-Link gdb server when debug session starts
 			dap.listeners.on_config["stlink_autostart"] = function(config) -- runs just before debug session starts (after it's configured with any user input)
 
 				-- if config.type == "cppdbg" then -- Only run for cppdbg configs
 				if config.name == "Debug STM32" then -- Only start for STM32 config
-					print ("starting STM32 gdb server")
-					vim.fn.jobstart({ -- start asyncronous gdb server process
-						"ST-LINK_gdbserver",
-						"-d", "-v", "-t",
+					if is_job_running(stlink_gdb_job) then
+						vim.notify("ST-LINK_gdbserver already running", vim.log.levels.INFO)
+						return config
+					end
+
+					stlink_gdb_job = vim.fn.jobstart({ -- start asyncronous gdb server process
+						"/opt/ST/STM32CubeCLT_1.19.0/STLink-gdb-server/bin/ST-LINK_gdbserver",
+						"-d", "-v",
 						"-p", "61234", -- make sure this matches miDebuggerServerAddress
 						"-cp", "/opt/ST/STM32CubeCLT_1.19.0/STM32CubeProgrammer/bin",
-					-- }, { detach = true }) -- neovim won't manage or kill process, it will keep running even if neovim exits
-					}, { detach = false})
+						-- }, { detach = true }) -- neovim won't manage or kill process, it will keep running even if neovim exits
+					}, { detach = false })
+
+					if stlink_gdb_job <= 0 then
+						stlink_gdb_job = nil
+						vim.notify("Failed to start ST-LINK_gdbserver", vim.log.levels.ERROR)
+						return config
+					end
 
 					-- Give the server a moment to come up before cppdbg / gdb try to connect
-					vim.wait(1000) -- increase to 2000 if still flaky
-					print("done")
+					vim.wait(3000)
+					if not is_job_running(stlink_gdb_job) then
+						stlink_gdb_job = nil
+						vim.notify("ST-LINK_gdbserver exited before debugger connected", vim.log.levels.ERROR)
+						return config
+					end
 				end
 
 				-- IMPORTANT: on_config *must* return a config
@@ -139,14 +174,25 @@ return {
 
 				-- if config.type == "cppdbg" then -- Only run for cppdbg configs
 				if config.name == "Debug Pi Pico" then
+					if is_job_running(pico_openocd_job) then
+						vim.notify("openocd already running", vim.log.levels.INFO)
+						return config
+					end
+
 					print("starting pico gdb server")
-					vim.fn.jobstart({ -- start asyncronous gdb server process
+					pico_openocd_job = vim.fn.jobstart({ -- start asyncronous gdb server process
 						"openocd",
 						"-f", "interface/cmsis-dap.cfg",
 						"-f", "target/rp2350.cfg", -- will have to change if using rp2040
 						"-c", "adapter speed 5000",
 						--						"-c", "program build/HelloWorld.elf verify reset",
 					}, { detach = false }) -- process will terminate when neovim closes
+
+					if pico_openocd_job <= 0 then
+						pico_openocd_job = nil
+						vim.notify("Failed to start openocd", vim.log.levels.ERROR)
+						return config
+					end
 
 					-- Give the server a moment to come up before cppdbg / gdb try to connect
 					vim.wait(2000) -- increase if still flaky
@@ -239,6 +285,8 @@ return {
 			dap.listeners.before.event_terminated["dapui_config"] = function()
 				vim.notify("DAP session terminated")
 				dapui.close()
+				stop_stlink_gdbserver()
+				stop_pico_openocd()
 				-- Run refresh AFTER DAP has finished cleaning up — fixes needing "two refreshes"
 				vim.schedule(function()
 					vt.refresh()
@@ -248,6 +296,8 @@ return {
 			dap.listeners.before.event_exited["dapui_config"] = function()
 				vim.notify("DAP session terminated")
 				dapui.close()
+				stop_stlink_gdbserver()
+				stop_pico_openocd()
 				-- Run refresh AFTER DAP has finished cleaning up — fixes needing "two refreshes"
 				vim.schedule(function()
 					vt.refresh()
@@ -257,6 +307,8 @@ return {
 			dap.listeners.before.disconnect["dapui_config"] = function()
 				vim.notify("DAP session terminated")
 				dapui.close()
+				stop_stlink_gdbserver()
+				stop_pico_openocd()
 				-- Run refresh AFTER DAP has finished cleaning up — fixes needing "two refreshes"
 				vim.schedule(function()
 					vt.refresh()
@@ -323,6 +375,7 @@ return {
 
 			vim.keymap.set("n", "<leader>mp", function()
 				dap.terminate()
+				stop_stlink_gdbserver()
 
 				local elf, err = find_elf("Debug")
 				if not elf then
@@ -336,6 +389,7 @@ return {
 			vim.keymap.set("n", "<leader>mB", function()
 				vim.cmd("wall") -- Save all modified buffers
 				dap.terminate() -- Terminate debug session if running
+				stop_stlink_gdbserver()
 
 				-- Build and flash STM32
 
